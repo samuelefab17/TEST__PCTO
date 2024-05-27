@@ -12,7 +12,7 @@ unsigned long microseconds;
 
 float vReal[samples];
 float vImag[samples];
-float l;
+float L;
 
 ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, samples, samplingFrequency, true);
 
@@ -95,8 +95,8 @@ void setup() {
 // Task n.1
 void loop() {
 
-       if (mpu.update()) {
-        l = mpu.getAccZ();
+    if (mpu.update()) {
+        L = mpu.getAccZ();
     }
 
 }
@@ -104,7 +104,7 @@ void loop() {
 // Task n.2
 void loop2() {
 
-   function_pin(pin1, LOOP1_TIME);
+   function_pin(pin2, LOOP1_TIME);
 
 }
 
@@ -145,7 +145,7 @@ void loop6(){
   microseconds = micros();
   for(int i=0; i<samples; i++)
   {
-      vReal[i] = l;
+      vReal[i] = L;
       vImag[i] = 0;
       while(micros() - microseconds < sampling_period_us){
       }
@@ -161,6 +161,8 @@ void loop6(){
   FFT.complexToMagnitude(); /* Compute magnitudes */
   PrintVector(vReal, (samples >> 1), SCL_FREQUENCY);
   float x = FFT.majorPeak();
+  Serial.println(x, 6); //Print out what frequency is the most dominant.
+  while(1);
 }
 
 void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType)
@@ -183,7 +185,7 @@ void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType)
     }
     Serial.print(abscissa, 6);
     if(scaleType==SCL_FREQUENCY)
-      Serial.print("Hz");
+    Serial.print("Hz");
     Serial.print(" ");
     Serial.println(vData[i], 4);
   }
