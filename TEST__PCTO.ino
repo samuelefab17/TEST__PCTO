@@ -1,25 +1,18 @@
 #include <Scheduler.h>
 #include "arduinoFFT.h"
 #include "MPU9250.h"
+#include "simpleDSP_fft.h"
 
-MPU9250 mpu;
-
-#define CHANNEL l
-const uint16_t samples = 64; 
-const float samplingFrequency = 100; 
-unsigned int sampling_period_us;
-unsigned long microseconds;
-
-float vReal[samples];
-float vImag[samples];
+#define DATA_LEN 16
 float L;
 
-ArduinoFFT<float> FFT = ArduinoFFT<float>(vReal, vImag, samples, samplingFrequency, true);
+COMPLEX data[DATA_LEN] =
+    {
+1.08, 1.98, 1.97, 1.23, 1.62, 1.75, 2.37, 1.59, 1.08, 1.18, 1.74, 1.40, 1.40, 1.34, 2.12, 1.43, 
 
-#define SCL_INDEX 0x00
-#define SCL_TIME 0x01
-#define SCL_FREQUENCY 0x02
-#define SCL_PLOT 0x03
+};
+
+MPU9250 mpu;
 
 int pin1 = 4u; //GP 4
 int pin2 = 5u; //GP 5
@@ -85,8 +78,6 @@ void setup() {
     Scheduler.startLoop(loop7);
   #endif
 
-  sampling_period_us = round(1000000*(1.0/samplingFrequency));
-
   Wire.begin();
   mpu.setup(0x68);
 
@@ -94,11 +85,9 @@ void setup() {
 
 // Task n.1
 void loop() {
-
     if (mpu.update()) {
         L = mpu.getAccZ();
     }
-
 }
 
 // Task n.2
@@ -142,54 +131,14 @@ void loop5(){
 // Task n.6
 void loop6(){
 
-  microseconds = micros();
-  for(int i=0; i<samples; i++)
-  {
-      vReal[i] = L;
-      vImag[i] = 0;
-      while(micros() - microseconds < sampling_period_us){
-      }
-      microseconds += sampling_period_us;
-  }
+    FFT(data, DATA_LEN);
 
-  PrintVector(vReal, samples, SCL_TIME);
-  FFT.windowing(FFTWindow::Hamming, FFTDirection::Forward);	/* Weigh data */
-  PrintVector(vReal, samples, SCL_TIME);
-  FFT.compute(FFTDirection::Forward); /* Compute FFT */
-  PrintVector(vReal, samples, SCL_INDEX);
-  PrintVector(vImag, samples, SCL_INDEX);
-  FFT.complexToMagnitude(); /* Compute magnitudes */
-  PrintVector(vReal, (samples >> 1), SCL_FREQUENCY);
-  float x = FFT.majorPeak();
-  Serial.println(x, 6); //Print out what frequency is the most dominant.
-  while(1);
-}
-
-void PrintVector(float *vData, uint16_t bufferSize, uint8_t scaleType)
-{
-  for (uint16_t i = 0; i < bufferSize; i++)
-  {
-    float abscissa;
-    /* Print abscissa value */
-    switch (scaleType)
+    for (int i = 0; i < DATA_LEN; i++)
     {
-      case SCL_INDEX:
-        abscissa = (i * 1.0);
-	break;
-      case SCL_TIME:
-        abscissa = ((i * 1.0) / samplingFrequency);
-	break;
-      case SCL_FREQUENCY:
-        abscissa = ((i * 1.0 * samplingFrequency) / samples);
-	break;
+        Serial.print(data[i].real / DATA_LEN);
+        Serial.print("\t\t");
+        Serial.println(data[i].imag / DATA_LEN);
     }
-    Serial.print(abscissa, 6);
-    if(scaleType==SCL_FREQUENCY)
-    Serial.print("Hz");
-    Serial.print(" ");
-    Serial.println(vData[i], 4);
-  }
-  Serial.println();
  
    delay(LOOP6_TIME);
 
