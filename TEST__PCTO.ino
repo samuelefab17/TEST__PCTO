@@ -3,14 +3,11 @@
 #include "MPU9250.h"
 #include "simpleDSP_fft.h"
 
-#define DATA_LEN 16
+#define DATA_LEN 2
 float L;
+int i;
 
-COMPLEX data[DATA_LEN] =
-    {
-1.08, 1.98, 1.97, 1.23, 1.62, 1.75, 2.37, 1.59, 1.08, 1.18, 1.74, 1.40, 1.40, 1.34, 2.12, 1.43, 
-
-};
+COMPLEX data[DATA_LEN] = {};
 
 MPU9250 mpu;
 
@@ -22,11 +19,11 @@ int pin4 = 7u; //GP 7
 #define SERIAL_BAUD 9600
 //#define SERIAL_BAUD 115200
 
-#define LOOP2 1
+#define LOOP2 0
 #define LOOP3 0
 #define LOOP4 0
 #define LOOP5 0
-#define LOOP6 1
+#define LOOP6 0
 #define LOOP7 0
 
 #define LOOP1_TIME 100 
@@ -85,9 +82,12 @@ void setup() {
 
 // Task n.1
 void loop() {
-    if (mpu.update()) {
-        L = mpu.getAccZ();
+          if (mpu.update()){
+
+           L = mpu.getAccZ();
+          Serial.println(L);    
     }
+  delay(100);
 }
 
 // Task n.2
