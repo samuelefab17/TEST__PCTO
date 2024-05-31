@@ -5,6 +5,7 @@
 
 #define DATA_LEN 2
 float L;
+float N;
 int i;
 
 COMPLEX data[DATA_LEN] = {};
@@ -91,18 +92,25 @@ void setup() {
 
     mpu.verbose(true);  
     mpu.calibrateAccelGyro();
+    delay(2500);
+    mpu.calibrateMag();
+    delay(500);
     mpu.verbose(false);
 
 }
 
 // Task n.1
 void loop() {
-          if (mpu.update()){
-
-           L =  (mpu.getAccZ()* 100);
-          Serial.println(L);    
-    }
-  delay(100);
+  if (mpu.update()){
+static uint32_t prev_ms = millis();
+        if (millis() > prev_ms + 25) {
+      Serial.print(mpu.getAccZ());
+      Serial.print(" ; ");
+      Serial.println(mpu.getMagX());
+      delay(100);
+      prev_ms = millis();
+        }
+  }
 }
 
 // Task n.2
