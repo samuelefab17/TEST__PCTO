@@ -16,29 +16,33 @@ int pin2 = 5u; //GP 5
 int pin3 = 6u; //GP 6 
 int pin4 = 7u; //GP 7
 
-#define SERIAL_BAUD 9600
-//#define SERIAL_BAUD 115200
+//#define SERIAL_BAUD 9600
+#define SERIAL_BAUD 115200
 
 #define LOOP2 0
 #define LOOP3 0
 #define LOOP4 0
 #define LOOP5 0
 #define LOOP6 0
-#define LOOP7 0
+#define KEEP_ALIVE 1
 
-#define LOOP1_TIME 100 
+#define LOOP1_TIME 100 //ms
 #define LOOP2_TIME 100  
 #define LOOP3_TIME 100  
 #define LOOP4_TIME 100       
 #define LOOP5_TIME 1000 
 #define LOOP6_TIME 2000
 
-void function_pin(int pin, int LOOP_TIME) {
+#define DUTY_CYCLE 50 //%
 
+void function_pin(int, int, int);
+void function_pin(int pin, int LOOP_TIME, int CYCLE) {
+
+  int LOOP_TIME_DUTY_CYCLE = (LOOP_TIME * CYCLE) / 100;
   digitalWrite(pin, HIGH);
-  delay(LOOP_TIME);
+  delay(LOOP_TIME_DUTY_CYCLE);
   digitalWrite(pin, LOW);
-  delay(LOOP_TIME);
+  delay(LOOP_TIME_DUTY_CYCLE);
 
 }
 
@@ -71,12 +75,23 @@ void setup() {
     Scheduler.startLoop(loop6);
   #endif
 
-  #if LOOP7 == 1
-    Scheduler.startLoop(loop7);
+  #if KEEP_ALIVE == 1
+    Scheduler.startLoop(keep_alive);
   #endif
 
   Wire.begin();
   mpu.setup(0x68);
+
+  if (!mpu.setup(0x68)) {  
+     while (1) {
+       Serial.println("MPU connection failed.");
+       delay(5000);
+     }
+   }
+
+    mpu.verbose(true);  
+    mpu.calibrateAccelGyro();
+    mpu.verbose(false);
 
 }
 
@@ -84,7 +99,7 @@ void setup() {
 void loop() {
           if (mpu.update()){
 
-           L = mpu.getAccZ();
+           L =  (mpu.getAccZ()* 100);
           Serial.println(L);    
     }
   delay(100);
@@ -93,21 +108,21 @@ void loop() {
 // Task n.2
 void loop2() {
 
-   function_pin(pin2, LOOP1_TIME);
+   function_pin(pin2, LOOP2_TIME, DUTY_CYCLE);
 
 }
 
 // Task n.3
 void loop3() {
 
-   function_pin(pin3, LOOP3_TIME);
+   function_pin(pin3, LOOP3_TIME, DUTY_CYCLE);
 
 }
 
 // Task n.4
 void loop4(){
 
-   function_pin(pin4, LOOP4_TIME);
+   function_pin(pin4, LOOP4_TIME, DUTY_CYCLE);
 
 }
 
@@ -146,7 +161,7 @@ void loop6(){
 }
 
 // Task n.7
-void loop7(){
+void keep_alive(){
 
    digitalWrite(LED_BUILTIN, HIGH);
    delay(10000);
