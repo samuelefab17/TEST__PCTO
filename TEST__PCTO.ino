@@ -16,6 +16,9 @@ int pin4 = 7u; //GP 7
 //#define SERIAL_BAUD 9600
 #define SERIAL_BAUD 115200
 
+#define SERIAL_BAUD_COMMUNICATION 9600 
+//#define SERIAL_BAUD_COMMUNICATION 115200
+
 #define LOOP2 1
 #define LOOP3 1
 #define LOOP4 0
@@ -50,6 +53,7 @@ void setup()
   pinMode(pin4, OUTPUT);
   
   Serial.begin(SERIAL_BAUD);
+  Serial1.begin(SERIAL_BAUD_COMMUNICATION);
 
   #if LOOP2 == 1
     Scheduler.startLoop(loop2);
@@ -144,7 +148,7 @@ void loop3()
   if(magn_index == (ELEM - 1))
   {
     for (int i = 0; i < ELEM; i++)	
-		 sum = sum + magn[i];
+		  sum = sum + magn[i];
 	  ris = sum /ELEM;
     sum = 0;
     Serial.print("r: "); Serial.print(ris);
@@ -156,7 +160,9 @@ void loop3()
 // Task n.4
 void loop4()
 {
-  function_pin(pin4, LOOP4_TIME, DUTY_CYCLE);
+  char stringa[20] = "Hello World";
+  Serial1.write(stringa, 20); 
+  delay(1000);
 }
 
 // Task n.5
