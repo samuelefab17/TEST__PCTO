@@ -1,10 +1,13 @@
 #include <Scheduler.h>
 #include "MPU9250.h"
+#include <stdlib.h>
 
 float acce[12];
 float magn[12];
 volatile int acce_index;
 volatile int magn_index;
+  float ris;
+  float ris2;
 
 MPU9250 mpu;
 
@@ -21,7 +24,7 @@ int pin4 = 7u; //GP 7
 
 #define LOOP2 1
 #define LOOP3 1
-#define LOOP4 0
+#define LOOP4 1
 #define LOOP5 0
 #define LOOP6 0
 #define KEEP_ALIVE 1
@@ -126,7 +129,6 @@ void loop()
 void loop2() 
 {
   float sum;
-  float ris;
   if(acce_index == (ELEM - 1))
   {
     for (int i = 0; i < ELEM; i++)	
@@ -134,7 +136,8 @@ void loop2()
 	  ris = sum /ELEM;
     sum = 0;
     //Serial.print("d: "); Serial.println(acce_index);
-    Serial.print("r: "); Serial.print(ris);
+    //Serial.print("r: "); Serial.print(ris);
+    //Serial1.write(ris);
     acce_index = 0;
   }
   delay(10);
@@ -144,14 +147,14 @@ void loop2()
 void loop3() 
 {
   float sum;
-  float ris;
   if(magn_index == (ELEM - 1))
   {
     for (int i = 0; i < ELEM; i++)	
 		  sum = sum + magn[i];
-	  ris = sum /ELEM;
+	  ris2 = sum /ELEM;
     sum = 0;
-    Serial.print("r: "); Serial.print(ris);
+    //Serial.print("r: "); Serial.print(ris);
+
     magn_index = 0;
   }
   delay(10);
@@ -160,8 +163,10 @@ void loop3()
 // Task n.4
 void loop4()
 {
-  char stringa[20] = "Hello World";
-  Serial1.write(stringa, 20); 
+  Serial.println("alive");
+  Serial1.print(ris);
+  Serial1.print(" ");
+  Serial1.println(ris2);
   delay(1000);
 }
 
