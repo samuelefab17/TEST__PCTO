@@ -1,20 +1,16 @@
 #include <Scheduler.h>
 #include "MPU9250.h"
-#include <stdlib.h>
 
 float acce[12];
 float magn[12];
-volatile int acce_index;
-volatile int magn_index;
-  float ris;
-  float ris2;
+
+int acce_index;
+int magn_index;
+
+float ris_acce;
+float ris_magn;
 
 MPU9250 mpu;
-
-int pin1 = 4u; //GP 4
-int pin2 = 5u; //GP 5
-int pin3 = 6u; //GP 6 
-int pin4 = 7u; //GP 7
 
 //#define SERIAL_BAUD 9600
 #define SERIAL_BAUD 115200
@@ -32,29 +28,14 @@ int pin4 = 7u; //GP 7
 #define LOOP1_TIME 100 //ms
 #define LOOP2_TIME 1000  
 #define LOOP3_TIME 100  
-#define LOOP4_TIME 100       
+#define LOOP4_TIME 1000       
 #define LOOP5_TIME 1000 
 #define LOOP6_TIME 2000
 
-#define DUTY_CYCLE 50 //%
-
-void function_pin(int, int, int);
-void function_pin(int pin, int LOOP_TIME, int CYCLE) 
-{
-  int LOOP_TIME_DUTY_CYCLE = (LOOP_TIME * CYCLE) / 100;
-  digitalWrite(pin, HIGH);
-  delay(LOOP_TIME_DUTY_CYCLE);
-  digitalWrite(pin, LOW);
-  delay(LOOP_TIME_DUTY_CYCLE);
-}
+#define ELEM 10 //divisore
 
 void setup() 
 {
-  pinMode(pin1, OUTPUT);
-  pinMode(pin2, OUTPUT);
-  pinMode(pin3, OUTPUT);
-  pinMode(pin4, OUTPUT);
-  
   Serial.begin(SERIAL_BAUD);
   Serial1.begin(SERIAL_BAUD_COMMUNICATION);
 
@@ -93,7 +74,6 @@ void setup()
       delay(5000);
     }
   }
-
     mpu.verbose(true); 
     mpu.calibrateAccelGyro();
     delay(2500);
@@ -116,15 +96,11 @@ void loop()
       magn[magn_index] = lett;
       acce_index++;
       magn_index++;
-      //Serial.println(acce_index);
-      //Serial.print("Mag "); Serial.println(lett);
-      //Serial.print("Acc "); Serial.println(let);
       prev_ms = millis();
     }    
   }
 }
         
-#define ELEM 10
 // Task n.2
 void loop2() 
 {
@@ -133,11 +109,8 @@ void loop2()
   {
     for (int i = 0; i < ELEM; i++)	
 		 sum = sum + acce[i];
-	  ris = sum /ELEM;
+	  ris_acce = sum /ELEM;
     sum = 0;
-    //Serial.print("d: "); Serial.println(acce_index);
-    //Serial.print("r: "); Serial.print(ris);
-    //Serial1.write(ris);
     acce_index = 0;
   }
   delay(10);
@@ -151,10 +124,8 @@ void loop3()
   {
     for (int i = 0; i < ELEM; i++)	
 		  sum = sum + magn[i];
-	  ris2 = sum /ELEM;
+	  ris_magn = sum /ELEM;
     sum = 0;
-    //Serial.print("r: "); Serial.print(ris);
-
     magn_index = 0;
   }
   delay(10);
@@ -163,27 +134,16 @@ void loop3()
 // Task n.4
 void loop4()
 {
-  Serial.println("alive");
-  Serial1.print(ris);
+  Serial1.print(ris_acce);
   Serial1.print(" ");
-  Serial1.println(ris2);
-  delay(1000);
+  Serial1.println(ris_magn);
+  delay(LOOP4_TIME);
 }
 
 // Task n.5
 void loop5()
 {
-  float number1_LOOP5 = random(99999) / 100000.0;
-  float number2_LOOP5 = random(99999) / 1000.0;
-  float number3_LOOP5 = random(99999) / 10000.0;
-  float number4_LOOP5 = random(99999) / 1000.0;
 
-  double result1_LOOP5 = (number1_LOOP5 * number4_LOOP5) / (number2_LOOP5 * number3_LOOP5);
-  double result2_LOOP5 = sqrt(result1_LOOP5);
-
-  delay(LOOP5_TIME);
-
-  yield();
 }
 
 // Task n.6
